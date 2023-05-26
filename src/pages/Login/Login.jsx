@@ -1,25 +1,65 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { FcGoogle } from "react-icons/fc";
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import { toast } from "react-hot-toast";
+import { TbFidgetSpinner } from "react-icons/tb";
 
 const Login = () => {
   const { signIn, loading, setLoading, signInWithGoogle, resetPassword } =
     useContext(AuthContext);
 
   const navigate = useNavigate();
+  const emailRef = useRef();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const handleGoogleSignIn = () => {
     signInWithGoogle()
       .then((result) => {
+        toast.success("Login successful");
         console.log(result.user);
-        navigate("/");
+        navigate(from, { replace: true });
       })
       .catch((err) => {
         console.log(err.message);
-        toast.error(err.message);
+        toast.error(err.code);
+        setLoading(false);
+      });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const form = event.target;
+    const email = form.email.value;
+    const password = form.password.value;
+
+    signIn(email, password)
+      .then((result) => {
+        toast.success("Login successful");
+        console.log(result.user);
+        navigate(from, { replace: true });
+      })
+      .catch((err) => {
+        console.log(err.message);
+        toast.error(err.code);
+        setLoading(false);
+      });
+  };
+
+  //   handle password reset
+  const handleReset = () => {
+    const email = emailRef.current.value;
+    resetPassword(email)
+      .then(() => {
+        toast.success("Please check your email to reset your password");
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err.message);
+        toast.error(err.code);
+        setLoading(false);
       });
   };
 
@@ -33,6 +73,7 @@ const Login = () => {
           </p>
         </div>
         <form
+          onSubmit={handleSubmit}
           noValidate=""
           action=""
           className="space-y-6 ng-untouched ng-pristine ng-valid"
@@ -43,6 +84,7 @@ const Login = () => {
                 Email address
               </label>
               <input
+                ref={emailRef}
                 type="email"
                 name="email"
                 id="email"
@@ -74,12 +116,22 @@ const Login = () => {
               type="submit"
               className="bg-rose-500 w-full rounded-md py-3 text-white"
             >
-              Continue
+              {loading ? (
+                <TbFidgetSpinner
+                  className="m-auto animate-spin"
+                  size={24}
+                ></TbFidgetSpinner>
+              ) : (
+                "Continue"
+              )}
             </button>
           </div>
         </form>
         <div className="space-y-1">
-          <button className="text-xs hover:underline hover:text-rose-500 text-gray-400">
+          <button
+            onClick={handleReset}
+            className="text-xs hover:underline hover:text-rose-500 text-gray-400"
+          >
             Forgot password?
           </button>
         </div>
