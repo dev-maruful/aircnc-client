@@ -4,6 +4,7 @@ import { useContext, useRef } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
 import { toast } from "react-hot-toast";
 import { TbFidgetSpinner } from "react-icons/tb";
+import { saveUser } from "../../api/auth";
 
 const SignUp = () => {
   const {
@@ -43,6 +44,7 @@ const SignUp = () => {
             updateUserProfile(name, imageUrl)
               .then(() => {
                 toast.success("SignUp successful");
+                saveUser(result.user);
                 navigate(from, { replace: true });
               })
               .catch((err) => {
@@ -69,6 +71,7 @@ const SignUp = () => {
     signInWithGoogle()
       .then((result) => {
         console.log(result.user);
+        saveUser(result.user);
         navigate(from, { replace: true });
       })
       .catch((err) => {
